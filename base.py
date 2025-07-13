@@ -37,10 +37,11 @@ class ParseTree:
             self.from_string(formula)
     
     def __repr__(self):
-        return f"ParseTree(formula={self.__str__()})"
-    
+        return f'ParseTree(formula="{self.__str__()}")'
+
     def __str__(self):
-        return "".join(self.__inorder())
+        inorder_nodes = self.__inorder()
+        return "".join(node.value for node in inorder_nodes)
 
     def __inorder(self) -> list[Node]:
         if not self.is_built:
