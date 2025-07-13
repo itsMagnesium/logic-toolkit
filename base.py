@@ -1,3 +1,6 @@
+from collections import deque
+from typing import Union
+
 class Node:
     def __init__(self, value: str,  left: "Node" = None, right: "Node" = None) -> None:
         self.value = value
@@ -80,4 +83,45 @@ class ParseTree:
         return self.__root
     
     def from_string(self, formula: str) -> "ParseTree":
-        pass
+        # TODO: This method should be fixed, there are several cases in which the method malfunctions.
+        if self.is_built:
+            raise ValueError("ParseTree is already built. Create a new instance to parse a different formula.")
+        
+        formula = formula.replace(' ', '')
+        current = Node(value='')
+        stack = deque([current])
+        current.left = Node(value='')
+        current = current.left
+        for token in list(formula):
+            if token == '(':
+                stack.append(current)
+                current.left = Node(value='')
+                current = current.left
+            elif token in ['¬', '→', '∧', '∨']:
+                stack.append(current)
+                current.value = token
+                current.right = Node(value='')
+                current = current.right
+            elif token == ')':
+                current = stack.pop()
+            elif token.isalpha():
+                current.value = token
+                current = stack.pop() if stack else None
+            else:
+                raise ValueError(f"Invalid token in formula: {token}")
+        if stack:
+            raise ValueError("Unmatched parentheses in formula.")
+        self.__root = current
+        return self
+    
+    @classmethod
+    def is_valid(cls, formula: str) -> Union["ParseTree", None]:
+        try:
+            new_instance = cls()
+            new_instance.from_string(formula)
+            print('Valid Formula')
+            print(new_instance.preorder())
+            return new_instance
+        except ValueError:
+            print('Invalid Formula')
+            return None
