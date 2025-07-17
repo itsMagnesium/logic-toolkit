@@ -3,11 +3,11 @@ from typing import Union
 class Node:
     def __init__(self, value: str,  left: "Node" = None, right: "Node" = None) -> None:
         self.value = value
-        self.__left = left
-        self.__right = right
+        self.left = left
+        self.right = right
 
     def __repr__(self):
-        return f"Node(value={self.value}, left={repr(self.__left)}, right={repr(self.__right)})"
+        return f"Node(value='{self.value}', left={f"'{self.left.value}'" if self.left else None}, right={f"'{self.right.value}'" if self.right else None})"
 
     def __str__(self):
         return self.value
@@ -21,16 +21,18 @@ class Node:
         return self.__right
 
     @right.setter
-    def right(self, node: "Node") -> None:
-        if node is None or not isinstance(node, Node):
-            raise ValueError("Right child must be a Node instance.")
-        self.__right = node
+    def right(self, node: Union["Node", None]) -> None:
+        if isinstance(node, Node) or node is None:
+            self.__right = node
+        else:
+            raise TypeError("Right child must be a Node instance or None.")
 
-    @left.setter
-    def left(self, node: "Node") -> None:
-        if node is None or not isinstance(node, Node):
-            raise ValueError("Left child must be a Node instance.")
-        self.__left = node
+    @left.setter  
+    def left(self, node: Union["Node", None]) -> None:
+        if isinstance(node, Node) or node is None:
+            self.__left = node
+        else:
+            raise TypeError("Left child must be a Node instance or None.")
 
 class ParseTree:
     def __init__(self, formula: str = None) -> None:
