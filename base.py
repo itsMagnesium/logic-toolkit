@@ -1,4 +1,5 @@
 from typing import Union
+from copy import deepcopy
 
 class Node:
     def __init__(self, value: str,  left: "Node" = None, right: "Node" = None) -> None:
@@ -33,6 +34,9 @@ class Node:
             self.__left = node
         else:
             raise TypeError("Left child must be a Node instance or None.")
+    
+    def copy(self) -> "Node":
+        return deepcopy(self)
 
 class ParseTree:
     def __init__(self) -> None:
@@ -65,14 +69,15 @@ class ParseTree:
             precedence = {'→': 1, '∨': 2, '∧': 3}
             current_prec = precedence[node.value]
             
-            if (node.left and node.left.value in precedence and 
-                precedence[node.left.value] < current_prec):
-                left = f"({left})"
+            if (node.left and node.left.value in precedence):
+                left_prec = precedence[node.left.value]
+                if (left_prec < current_prec or 
+                    (left_prec == current_prec and node.value == '→')):
+                    left = f"({left})"
            
             if (node.right and node.right.value in precedence):
                 right_prec = precedence[node.right.value]
-                if (right_prec < current_prec or 
-                    (right_prec == current_prec and node.value != '→')):
+                if right_prec < current_prec:
                     right = f"({right})"
             
             return f"{left} {node.value} {right}"

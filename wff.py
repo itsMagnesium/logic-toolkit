@@ -2,12 +2,11 @@ from base import ParseTree, Node
 from typing import Union
 
 class WellFormedFormula(ParseTree):
-    def __init__(self, formula: str = None) -> None:
+    def __init__(self, formula: str) -> None:
         super().__init__()
-        if formula is not None:
-            self.from_string(formula)
+        self.__from_string(formula)
 
-    def from_string(self, formula: str) -> "WellFormedFormula":
+    def __from_string(self, formula: str) -> "WellFormedFormula":
         if self.is_built:
             raise ValueError("ParseTree is already built. Create a new instance to parse a different formula.")
         
@@ -26,17 +25,17 @@ class WellFormedFormula(ParseTree):
         while formula.startswith('(') and formula.endswith(')') and self.__matching_parenthesis(formula, 0) == len(formula) - 1:
             formula = formula[1:-1]
         
-        if formula.startswith('¬'):
-            operand = formula[1:]
-            if not operand:
-                raise ValueError("Missing operand for negation")
-            neg_node = Node('¬')
-            neg_node.right = self.__parse_expression(operand)
-            return neg_node
 
         main_op_pos = self.__find_main_operator(formula)
         
         if main_op_pos == -1:
+            if formula.startswith('¬'):
+                operand = formula[1:]
+                if not operand:
+                    raise ValueError("Missing operand for negation")
+                neg_node = Node('¬')
+                neg_node.right = self.__parse_expression(operand)
+                return neg_node
             if len(formula) == 1 and formula.isalpha():
                 return Node(formula)
             else:
@@ -70,9 +69,14 @@ class WellFormedFormula(ParseTree):
                 paren_level -= 1
             elif paren_level == 0 and char in precedence:
                 char_precedence = precedence[char]
-                if char_precedence <= main_op_precedence:
+                if char_precedence < main_op_precedence:
                     main_op_pos = i
                     main_op_precedence = char_precedence
+                elif char_precedence == main_op_precedence:
+                    if char == '→':
+                        pass
+                    else:
+                        main_op_pos = i
         
         return main_op_pos
 
@@ -94,8 +98,7 @@ class WellFormedFormula(ParseTree):
     @classmethod
     def is_valid(cls, formula: str) -> Union["WellFormedFormula", None]:
         try:
-            new_instance = cls()
-            new_instance.from_string(formula)
+            new_instance = cls(formula)
             print('Valid Formula')
             print(new_instance.preorder())
             return new_instance
