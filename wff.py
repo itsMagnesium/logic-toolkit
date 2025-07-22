@@ -25,7 +25,6 @@ class WellFormedFormula(ParseTree):
         while formula.startswith('(') and formula.endswith(')') and self.__matching_parenthesis(formula, 0) == len(formula) - 1:
             formula = formula[1:-1]
         
-
         main_op_pos = self.__find_main_operator(formula)
         
         if main_op_pos == -1:
@@ -36,7 +35,17 @@ class WellFormedFormula(ParseTree):
                 neg_node = Node('¬')
                 neg_node.right = self.__parse_expression(operand)
                 return neg_node
-            if len(formula) == 1 and formula.isalpha():
+            # Special constants first
+            elif formula in ['⊤', '⊥', 'T', 'F', 'true', 'false']:
+                # Normalize to standard symbols
+                if formula in ['T', 'true']:
+                    return Node('⊤')
+                elif formula in ['F', 'false']:
+                    return Node('⊥')
+                else:
+                    return Node(formula)
+            # Then check for propositional variables
+            elif len(formula) == 1 and formula.isalpha():
                 return Node(formula)
             else:
                 raise ValueError(f"Invalid expression: {formula}")
