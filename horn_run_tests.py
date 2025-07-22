@@ -4,7 +4,7 @@ def test_case(formula_str):
     print(f"Testing: {formula_str}")
     
     try:
-        if "∨" in formula_str or "v" in formula_str:
+        if "∨" in formula_str or "v" in formula_str or "¬" in formula_str:
             print("Invalid Horn Formula")
             return
             
@@ -31,7 +31,10 @@ test_cases = [
     "(p ∧ q ∧ s → p) ∧ (q ∧ r → p) ∧ (p ∧ s → s)",
     "(p ∧ q ∧ s → ⊥) ∧ (q ∧ r → p) ∧ (⊤ → s)",
     "⊤ → ⊥",
-    "q ∨ r → p"
+    "q ∨ r → p",
+    "(p ∧ q ∧ s → ⊥) ∧ (s → p) ∧ (s → q) ∧ (⊤ → s)",
+    "(s → p) ∧ (p ∧ q ∧ s → p) ∧ (⊤ → r) ∧ (s ∧ p → q) ∧ (⊤ → s)",
+    "(¬s → p) ∧ (p ∧ q ∧ s → p) ∧ (⊤ → r) ∧ (s ∧ p → q) ∧ (⊤ → s)",
 ]
 
 for idx, case in enumerate(test_cases, 1):

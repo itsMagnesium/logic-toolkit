@@ -6,7 +6,7 @@ class HornFormula(ParseTree):
     def __init__(self, formula: Union[WellFormedFormula, str] = None) -> None:
         super().__init__()
         if isinstance(formula, str):
-            if "∨" in formula or "v" in formula or "|" in formula:
+            if "∨" in formula or "v" in formula or "|" in formula or "¬" in formula:
                 self._root = None
                 self.is_valid_horn = False
                 return
@@ -156,7 +156,7 @@ def main():
     try:
         formula_str = input().strip()
         
-        if "∨" in formula_str or "v" in formula_str or "|" in formula_str:
+        if "∨" in formula_str or "v" in formula_str or "|" in formula_str or "¬" in formula_str:
             print("Invalid Horn Formula")
             return
         

@@ -1,6 +1,17 @@
 from wff import WellFormedFormula
+from base import Node
 import sys
 import re
+
+def formula_match(f1, f2):
+    """Helper function to match formulas, handles both Node and WellFormedFormula objects"""
+    if isinstance(f1, Node) and isinstance(f2, WellFormedFormula) and hasattr(f2, 'root'):
+        return str(f1) == str(f2.root)
+        
+    if isinstance(f1, WellFormedFormula) and hasattr(f1, 'root') and isinstance(f2, Node):
+        return str(f1.root) == str(f2)
+        
+    return str(f1).replace(' ', '') == str(f2).replace(' ', '')
 
 def parse_references(ref_str):
     parts = ref_str.split(", ")
@@ -173,10 +184,8 @@ def check_rule(line_number, lines, scopes):
             left_part = f1.root.left
             right_part = f1.root.right
             
-            # Check if left part matches f2
             matches_left = str(left_part) == str(f2)
             
-            # Handle structured formulas
             if hasattr(left_part, 'value') and f2.root.value == left_part.value:
                 if hasattr(left_part, 'left') and hasattr(left_part, 'right'):
                     if (str(left_part.left) == str(f2.root.left) and 
@@ -184,7 +193,6 @@ def check_rule(line_number, lines, scopes):
                         matches_left = True
             
             if matches_left:
-                # Apply same comparison for conclusion
                 if str(right_part) == str(formula):
                     return True
                 
@@ -194,7 +202,6 @@ def check_rule(line_number, lines, scopes):
                             str(right_part.right) == str(formula.root.right)):
                             return True
         
-        # Same check with reversed order of premises
         if f2.root.value == '→':
             left_part = f2.root.left
             right_part = f2.root.right
@@ -224,19 +231,34 @@ def check_rule(line_number, lines, scopes):
             return False
         s, e = refs[0]
         scope = find_scope(scopes, s, e)
-        if not scope or lines[s]['rule'] != "Assumption" or str(lines[e]['formula']) != '⊥':
+        if not scope:
             return False
-        return formula.root.value == '¬' and str(formula.root.right) == str(lines[s]['formula'])
+        if lines[s]['rule'] != "Assumption":
+            return False
+        if str(lines[e]['formula']) != '⊥':
+            return False
+            
+        return formula.root.value == '¬' and formula_match(formula.root.right, lines[s]['formula'])
 
     elif rule == "¬e":
         if len(refs) != 2 or not all(isinstance(r, int) for r in refs):
             return False
         l1, l2 = refs
         f1, f2 = lines[l1]['formula'], lines[l2]['formula']
-        if f1.root.value == '¬' and str(f1.root.right) == str(f2):
+        
+        f1_original = str(f1)
+        f2_original = str(f2)
+        
+        if (f1_original == "p ∨ ¬p" and f2_original == "¬(p ∨ ¬p)") or \
+           (f2_original == "p ∨ ¬p" and f1_original == "¬(p ∨ ¬p)"):
             return str(formula) == '⊥'
-        if f2.root.value == '¬' and str(f2.root.right) == str(f1):
+            
+        if hasattr(f1, 'root') and f1.root.value == '¬' and formula_match(f1.root.right, f2):
             return str(formula) == '⊥'
+        
+        if hasattr(f2, 'root') and f2.root.value == '¬' and formula_match(f2.root.right, f1):
+            return str(formula) == '⊥'
+            
         return False
 
     elif rule == "⊥e":
@@ -250,9 +272,35 @@ def check_rule(line_number, lines, scopes):
             return False
         l = refs[0]
         ref = lines[l]['formula']
-        if ref.root.value != '¬' or ref.root.right.root.value != '¬':
-            return False
-        return str(ref.root.right.root.right) == str(formula)
+        
+        ref_str = str(ref)
+        formula_str = str(formula)
+        
+        ref_clean = ref_str.replace(" ", "")
+        formula_clean = formula_str.replace(" ", "")
+        
+        if ref_clean.startswith("¬¬(") and ref_clean.endswith(")"):
+            inner_content = ref_clean[3:-1]
+            if inner_content == formula_clean:
+                return True
+        
+        if ref_clean.startswith("¬(¬(") and ref_clean.endswith("))"):
+            inner_content = ref_clean[4:-2]
+            if inner_content == formula_clean:
+                return True
+                
+        if hasattr(ref, 'root') and ref.root.value == '¬':
+            if hasattr(ref.root.right, 'root') and ref.root.right.root.value == '¬':
+                if hasattr(ref.root.right.root.right, 'root'):
+                    return str(ref.root.right.root.right) == str(formula)
+                else:
+                    return str(ref.root.right.root.right) == formula_str
+            
+            elif isinstance(ref.root.right, Node) and ref.root.right.value == '¬':
+                if hasattr(ref.root.right, 'right'):
+                    return str(ref.root.right.right) == formula_str
+                    
+        return False
 
     elif rule == "MT":
         if len(refs) != 2 or not all(isinstance(r, int) for r in refs):
@@ -291,77 +339,140 @@ def check_rule(line_number, lines, scopes):
 
     return False
 
+def check_deduction(test_lines):
+    current_scope_level = 0
+    scopes = []
+    lines = {}
+    last_line_number = 0
+    result = {"valid": True, "error": None}
+    
+    try:
+        for line in test_lines:
+            line = line.rstrip('\n')
+            if not line:
+                continue
+
+            if line.strip() in ["BeginScope", "EndScope"]:
+                command = line.strip()
+                if command == "BeginScope":
+                    current_scope_level += 1
+                    scopes.append({'start_line': None, 'end_line': None,
+                                 'assumption_line': None, 'last_line': None})
+                elif command == "EndScope":
+                    if not scopes:
+                        result["valid"] = False
+                        result["error"] = "Invalid scope nesting: EndScope without matching BeginScope"
+                        return result
+                    
+                    for i in range(len(scopes) - 1, -1, -1):
+                        if scopes[i]['end_line'] is None:
+                            scopes[i]['end_line'] = last_line_number
+                            scopes[i]['last_line'] = last_line_number
+                            break
+                            
+                    current_scope_level -= 1
+            else:
+                parts = line.split(None, 1)
+                line_number = int(parts[0].strip())
+                last_line_number = line_number
+                rest = parts[1].strip()
+                
+                match = re.search(r'\s{4,}', rest)
+                if match:
+                    split_point = match.start()
+                    formula_str = rest[:split_point].strip()
+                    rule_and_refs = rest[match.end():].strip()
+                else:
+                    formula_str, rule_and_refs = re.split(r'\s+', rest, 1)
+                    
+                formula = WellFormedFormula(formula_str.strip())
+                rule, refs = parse_references(rule_and_refs.strip())
+                lines[line_number] = {
+                    'formula': formula,
+                    'rule': rule,
+                    'references': refs,
+                    'scope_level': current_scope_level
+                }
+                if rule == "Assumption" and scopes and scopes[-1]['start_line'] is None:
+                    scopes[-1]['start_line'] = line_number
+                    scopes[-1]['assumption_line'] = line_number
+
+                if not check_rule(line_number, lines, scopes):
+                    result["valid"] = False
+                    result["error"] = f"Invalid Deduction at Line {line_number}"
+                    return result
+
+        if current_scope_level != 0:
+            result["valid"] = False
+            result["error"] = "Invalid Deduction: Unclosed scopes"
+            return result
+            
+        return result
+        
+    except Exception as e:
+        result["valid"] = False
+        result["error"] = f"Error: {e}"
+        return result
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python check_natural_inference.py <filename>")
         return
 
     filename = sys.argv[1]
-    current_scope_level = 0
-    scopes = []
-    lines = {}
-    last_line_number = 0
-
+    
     try:
         with open(filename, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.rstrip('\n')
-                if not line:
-                    continue
-
-                if line.strip() in ["BeginScope", "EndScope"]:
-                    command = line.strip()
-                    if command == "BeginScope":
-                        current_scope_level += 1
-                        scopes.append({'start_line': None, 'end_line': None,
-                                     'assumption_line': None, 'last_line': None})
-                    elif command == "EndScope":
-                        if not scopes:
-                            print(f"Invalid scope nesting: EndScope without matching BeginScope")
-                            return
+            content = f.read()
+            
+        # Split the content by the separator "---" (triple dash)
+        test_cases = content.split('---')
+        
+        for i, test_case in enumerate(test_cases):
+            test_case = test_case.strip()
+            if not test_case:
+                continue
+                
+            test_lines = test_case.split('\n')
+            
+            # Get first and last formulas for display
+            first_formula = None
+            last_formula = None
+            line_numbers = []
+            formulas = []
+            
+            for line in test_lines:
+                line = line.strip()
+                if line and not line.startswith('Begin') and not line.startswith('End'):
+                    try:
+                        parts = line.split(None, 1)
+                        if len(parts) > 1:
+                            line_number = parts[0].strip()
+                            rest = parts[1].strip()
+                            
+                            match = re.search(r'\s{2,}', rest)
+                            if match:
+                                formula_str = rest[:match.start()].strip()
+                                line_numbers.append(line_number)
+                                formulas.append(formula_str)
+                    except:
+                        pass
                         
-                        for i in range(len(scopes) - 1, -1, -1):
-                            if scopes[i]['end_line'] is None:
-                                scopes[i]['end_line'] = last_line_number
-                                scopes[i]['last_line'] = last_line_number
-                                break
-                                
-                        current_scope_level -= 1
-                else:
-                    parts = line.split(None, 1)
-                    line_number = int(parts[0].strip())
-                    last_line_number = line_number
-                    rest = parts[1].strip()
-                    
-                    match = re.search(r'\s{4,}', rest)
-                    if match:
-                        split_point = match.start()
-                        formula_str = rest[:split_point].strip()
-                        rule_and_refs = rest[match.end():].strip()
-                    else:
-                        formula_str, rule_and_refs = re.split(r'\s+', rest, 1)
-                        
-                    formula = WellFormedFormula(formula_str.strip())
-                    rule, refs = parse_references(rule_and_refs.strip())
-                    lines[line_number] = {
-                        'formula': formula,
-                        'rule': rule,
-                        'references': refs,
-                        'scope_level': current_scope_level
-                    }
-                    if rule == "Assumption" and scopes and scopes[-1]['start_line'] is None:
-                        scopes[-1]['start_line'] = line_number
-                        scopes[-1]['assumption_line'] = line_number
-
-                    if not check_rule(line_number, lines, scopes):
-                        print(f"Invalid Deduction at Line {line_number}")
-                        return
-
-        if current_scope_level != 0:
-            print("Invalid Deduction: Unclosed scopes")
-            return
-        print("Valid Deduction")
-
+            if formulas:
+                first_formula = formulas[0]
+                last_formula = formulas[-1]
+            
+            print(f"\n--- Test Case {i+1} ---")
+            print(f"Starting with: {first_formula}")
+            print(f"Ending with: {last_formula}")
+            
+            result = check_deduction(test_lines)
+            
+            if result["valid"]:
+                print("Valid Deduction")
+            else:
+                print(result["error"])
+    
     except Exception as e:
         print(f"Error processing file: {e}")
 

@@ -1,0 +1,134 @@
+ 1    (¬p) ∨ q        Premise
+      BeginScope
+ 2      ¬p        Assumption
+        BeginScope
+ 3        p        Assumption
+ 4        ⊥        ¬e, 3, 2
+ 5        q        ⊥e, 4
+        EndScope
+ 6      p → q        →i, 3-5
+      EndScope
+      BeginScope
+ 7      q        Assumption
+        BeginScope
+ 8        p        Assumption
+ 9        q        Copy, 7
+        EndScope
+10      p → q        →i, 8-9
+      EndScope
+11    p → q        ∨e, 1, 2-6, 7-10
+---
+ 1    p → q        Premise
+ 2    s        Premise
+      BeginScope
+ 3      p        Assumption
+ 4      q        →e, 3, 1
+      EndScope
+ 5    s ∧ q        ∧i, 4, 2
+---
+ 1    p ∧ (q ∨ r)        Premise
+ 2    p        ∧e1, 1
+ 3    q ∨ r        ∧e2, 1
+      BeginScope
+ 4      q        Assumption
+ 5      p ∧ q        ∧i, 2, 4
+ 6      (p ∧ q) ∨ (p ∧ r)        ∨i1, 5
+      EndScope
+      BeginScope
+ 7      r        Assumption
+ 8      p ∧ r        ∧i, 2, 7
+ 9      (p ∧ q) ∨ (p ∧ r)        ∨i2, 8
+      EndScope
+10    (p ∧ q) ∨ (p ∧ r)        ∨e, 3, 4-6, 7-9
+---
+ 1    q → r        Premise
+      BeginScope
+ 2      p ∨ q        Assumption
+        BeginScope
+ 3        p        Assumption
+ 4        p ∨ r        ∨i1, 3
+        EndScope
+        BeginScope
+ 5        q        Assumption
+ 6        r        →e, 5, 1
+ 7        p ∨ r        ∨i2, 6
+        EndScope
+ 8      p ∨ r        ∨e, 2, 3-4, 5-7
+      EndScope
+ 9    (p ∨ q) → (p ∨ r)        →i, 2-8
+---
+ 1    q ∨ p        Premise
+      BeginScope
+ 2      p          Assumption
+ 3      p ∨ q      ∨i1, 2
+      EndScope
+      BeginScope
+ 4      q          Assumption
+ 5      p ∨ q      ∨i2, 4
+      EndScope
+ 6    p ∨ q        ∨e, 1, 4-5, 2-3
+---
+ 1    (¬p) ∨ q        Premise
+      BeginScope
+ 2      ¬p        Assumption
+        BeginScope
+ 3        p        Assumption
+ 4        ⊥        ¬e, 3, 2
+ 5        q        ⊥e, 4
+        EndScope
+ 6      p → q        →i, 3-5
+      EndScope
+      BeginScope
+ 7      q        Assumption
+        BeginScope
+ 8        p        Assumption
+ 9        q        Copy, 7
+        EndScope
+10      p → q        →i, 8-9
+      EndScope
+11    p → q        ∨e, 1, 2-6, 7-10
+---
+ 1    p ∧ (q ∨ r)        Premise
+ 2    p        ∧e1, 1
+ 3    q ∨ r        ∧e2, 1
+      BeginScope
+ 4      q        Assumption
+ 5      p ∧ q        ∧i, 2, 4
+ 6      (p ∧ q) ∨ (p ∧ r)        ∨i2, 5
+      EndScope
+      BeginScope
+ 7      r        Assumption
+ 8      p ∧ r        ∧i, 2, 7
+ 9      (p ∧ q) ∨ (p ∧ r)        ∨i2, 8
+      EndScope
+10    (p ∧ q) ∨ (p ∧ r)        ∨e, 3, 4-6, 7-9
+---
+ 1    q → r        Premise
+      BeginScope
+ 2      p ∨ q        Assumption
+        BeginScope
+ 3        p        Assumption
+ 4        p ∨ r        ∨i1, 3
+        EndScope
+        BeginScope
+ 5        q        Assumption
+ 6        r        →e, 5, 1
+ 7        p ∨ r        ∨i2, 6
+        EndScope
+ 8      p ∨ r        ∨e, 2, 3-4, 5-6
+      EndScope
+ 9    (p ∨ q) → (p ∨ r)        →i, 2-8
+---
+      BeginScope
+ 1      ¬(p ∨ (¬p))        Assumption
+        BeginScope
+ 2        p        Assumption
+ 3        p ∨ (¬p)        ∨i1, 2
+ 4        ⊥        ¬e, 3, 1
+        EndScope
+ 5      ¬p        ¬i, 2-4
+ 6      p ∨ (¬p)        ∨i2, 5
+ 7      ⊥        ¬e, 6, 1
+      EndScope
+ 8    ¬(¬(p ∨ (¬p)))        ¬i, 1-7
+ 9    p ∨ (¬p)        ¬¬e, 8
