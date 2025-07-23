@@ -1,6 +1,6 @@
 from logic_toolkit.wff import WellFormedFormula
 
-input_file = "tests/test1.txt"
+input_file = "tests/test11.txt"
 
 with open(input_file, 'r', encoding='utf-8') as f:
     input_lines = f.readlines()

@@ -69,7 +69,7 @@ class ParseTree:
         
         if node.value == '¬':
             operand = self._node_to_string(node.right)
-            if node.right and node.right.value in ['→', '∧', '∨']:
+            if node.right and node.right.value in ['→', '∧', '∨', '¬']:
                 operand = f"({operand})"
             return f"¬{operand}"
         elif node.value in ['→', '∧', '∨']:

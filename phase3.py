@@ -23,8 +23,7 @@ try:
     if is_satisfiable:
         print("Satisfiable")
         if true_vars:
-            for var in sorted(true_vars):
-                print(var)
+            print(*true_vars, sep=', ')
     else:
         print("Unsatisfiable")
         
