@@ -63,6 +63,9 @@ class CNF(ParseTree):
         if root is None:
             return None
         
+        root.left = self.__distribute_or_over_and(root.left)
+        root.right = self.__distribute_or_over_and(root.right)
+        
         if root.value == '∨':
             if root.left and root.left.value == '∧': # (A ∧ B) ∨ C
                 left_node = Node(
@@ -82,6 +85,8 @@ class CNF(ParseTree):
                     left=left_node,
                     right=right_node
                 )
+                
+                return self.__distribute_or_over_and(root)
 
             elif root.right and root.right.value == '∧': # A ∨ (B ∧ C) 
                 left_node = Node(
@@ -101,8 +106,7 @@ class CNF(ParseTree):
                     left=left_node,
                     right=right_node
                 )
-        
-        root.left = self.__distribute_or_over_and(root.left)
-        root.right = self.__distribute_or_over_and(root.right)
+                
+                return self.__distribute_or_over_and(root)
 
         return root
