@@ -1,0 +1,11 @@
+input:
+ 1    p → q        Premise
+ 2    s        Premise
+      BeginScope
+ 3      p        Assumption
+ 4      q        →e, 3, 1
+      EndScope
+ 5    s ∧ q        ∧i, 4, 2
+
+output:
+Invalid Deduction at Line 5

@@ -1,0 +1,6 @@
+input:
+1    p ∧ q
+∧e1, 1
+
+output:
+p

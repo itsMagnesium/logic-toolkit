@@ -1,0 +1,7 @@
+input:
+1    ¬p
+2    p
+¬e, 2, 1
+
+output:
+⊥

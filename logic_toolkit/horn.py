@@ -151,35 +151,3 @@ class HornFormula(ParseTree):
             true_vars.remove('⊤')
             
         return True, true_vars
-
-def main():
-    try:
-        formula_str = input().strip()
-        
-        if "∨" in formula_str or "v" in formula_str or "|" in formula_str or "¬" in formula_str:
-            print("Invalid Horn Formula")
-            return
-        
-        try:
-            formula = WellFormedFormula(formula_str)
-            horn_formula = HornFormula(formula)
-            horn_formula.is_valid_horn = True
-            
-            is_satisfiable, true_vars = horn_formula.check_satisfiability()
-            
-            if is_satisfiable:
-                print("Satisfiable")
-                if true_vars:
-                    for var in sorted(true_vars):
-                        print(var)
-            else:
-                print("Unsatisfiable")
-                
-        except Exception:
-            print("Invalid Horn Formula")
-            
-    except Exception:
-        print("Invalid Horn Formula")
-
-if __name__ == "__main__":
-    main()

@@ -1,0 +1,5 @@
+input:
+p → ((q → r) → s)
+
+output:
+(¬p ∨ q ∨ s) ∧ (¬p ∨ ¬r ∨ s)

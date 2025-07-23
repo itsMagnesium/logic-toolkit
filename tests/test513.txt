@@ -1,0 +1,16 @@
+input:
+ 1    p → q        Premise
+ 2    (¬p) ∨ p        LEM
+      BeginScope
+ 3      ¬p        Assumption
+ 4      (¬p) ∨ q        ∨i1, 3
+      EndScope
+      BeginScope
+ 5      p        Assumption
+ 6      q        →e, 5, 1
+ 7      (¬p) ∨ q        ∨i2, 6
+      EndScope
+ 8    (¬p) ∨ q        ∨e, 2, 3-7, 5-7
+
+output:
+Invalid Deduction at Line 8

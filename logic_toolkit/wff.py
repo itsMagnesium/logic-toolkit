@@ -96,14 +96,3 @@ class WellFormedFormula(ParseTree):
                     return i
         
         return -1
-    
-    @classmethod
-    def is_valid(cls, formula: str) -> Optional["WellFormedFormula"]:
-        try:
-            new_instance = cls(formula)
-            print('Valid Formula')
-            print(new_instance.preorder())
-            return new_instance
-        except ValueError:
-            print('Invalid Formula')
-            return None

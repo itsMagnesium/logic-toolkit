@@ -1,0 +1,5 @@
+input:
+(¬s → p) ∧ (p ∧ q ∧ s → p) ∧ (⊤ → r) ∧ (s ∧ p → q) ∧ (⊤ → s)
+
+output:
+Invalid Horn Formula

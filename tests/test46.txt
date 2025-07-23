@@ -1,0 +1,6 @@
+input:
+1    ¬(p ∨ q)
+∧e2, 1
+
+output:
+Rule Cannot Be Applied

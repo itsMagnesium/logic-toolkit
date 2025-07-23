@@ -1,0 +1,23 @@
+input:
+ 1    (¬p) ∨ q        Premise
+      BeginScope
+ 2      ¬p        Assumption
+        BeginScope
+ 3        p        Assumption
+ 4        ⊥        ¬e, 3, 2
+ 5        q        ⊥e, 4
+        EndScope
+ 6      p → q        →i, 3-5
+      EndScope
+      BeginScope
+ 7      q        Assumption
+        BeginScope
+ 8        p        Assumption
+ 9        q        Copy, 7
+        EndScope
+10      p → q        →i, 8-9
+      EndScope
+11    p → q        ∨e, 1, 2-6, 7-10
+
+output:
+Valid Deduction

@@ -1,0 +1,14 @@
+input:
+(p → (¬((¬r) ∧ q))) ∨ s
+
+output:
+Valid Formula
+∨
+  →
+    p
+    ¬
+      ∧
+        ¬
+          r
+        q
+  s

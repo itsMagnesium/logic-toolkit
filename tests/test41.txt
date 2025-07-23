@@ -1,0 +1,7 @@
+input:
+1    p ∧ q
+2    r
+∧i, 1, 2
+
+output:
+(p ∧ q) ∧ r

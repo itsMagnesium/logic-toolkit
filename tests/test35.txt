@@ -1,0 +1,5 @@
+input:
+(p ∧ q ∧ s → ⊥) ∧ (s → p) ∧ (s → q) ∧ (⊤ → s)
+
+output:
+Unsatisfiable

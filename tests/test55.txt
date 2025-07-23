@@ -1,0 +1,14 @@
+input:
+ 1    q ∨ p        Premise
+      BeginScope
+ 2      p        Assumption
+ 3      p ∨ q        ∨i1, 2
+      EndScope
+      BeginScope
+ 4      q        Assumption
+ 5      p ∨ q        ∨i2, 4
+      EndScope
+ 6    p ∨ q        ∨e, 1, 4-5, 2-3
+
+output:
+Valid Deduction

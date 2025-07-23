@@ -1,0 +1,6 @@
+input:
+(s → p) ∧ (p ∧ q ∧ s → p) ∧ (⊤ → r) ∧ (s ∧ p → q) ∧ (⊤ → s)
+
+output:
+Satisfiable
+s, p, q, r

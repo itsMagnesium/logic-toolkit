@@ -1,0 +1,6 @@
+input:
+p
+
+output:
+Valid Formula
+p

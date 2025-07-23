@@ -1,0 +1,10 @@
+input:
+ 1    p ∧ s        Premise
+ 2    (¬q) → (¬(p ∧ s))        Premise
+ 3    (¬r) → (¬q)        Premise
+ 4    ¬(¬(p ∧ s))        ¬¬i, 1
+ 5    ¬(¬q)        MT, 2, 4
+ 6    r        MT, 3, 5
+
+output:
+Invalid Deduction at Line 6

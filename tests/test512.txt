@@ -1,0 +1,18 @@
+input:
+ 1    (q ∨ t) → s        Premise
+ 2    (r ∧ q) → s        Premise
+ 3    q ∨ r        Premise
+      BeginScope
+ 4      q        Assumption
+        BeginScope
+ 5        r        Assumption
+ 6        r ∧ q        ∧i, 5, 4
+ 7        s        →e, 6, 2
+        EndScope
+ 8      q ∨ t        ∨i1, 4
+ 9      s        →e, 8, 1
+      EndScope
+10    s        ∨e, 3, 4-9, 5-7
+
+output:
+Invalid Deduction at Line 10

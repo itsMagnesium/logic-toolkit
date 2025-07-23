@@ -1,0 +1,7 @@
+input:
+1    p
+2    q
+→e, 1, 2
+
+output:
+Rule Cannot Be Applied

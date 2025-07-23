@@ -1,0 +1,16 @@
+input:
+      BeginScope
+ 1      ¬(p ∨ (¬p))        Assumption
+        BeginScope
+ 2        p        Assumption
+ 3        p ∨ (¬p)        ∨i1, 2
+ 4        ⊥        ¬e, 3, 1
+        EndScope
+ 5      ¬p        ¬i, 2-4
+ 6      p ∨ (¬p)        ∨i2, 5
+ 7      ⊥        ¬e, 6, 1
+      EndScope
+ 8    p ∨ (¬p)        PBC, 1-7
+
+output:
+Valid Deduction
