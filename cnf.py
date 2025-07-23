@@ -1,9 +1,9 @@
 from base import ParseTree, Node
 from wff import WellFormedFormula
-from typing import Union
+from typing import Optional, Union
 
 class CNF(ParseTree):
-    def __init__(self, formula: Union[WellFormedFormula, str] = None) -> None:
+    def __init__(self, formula: Optional[Union[WellFormedFormula, str]] = None) -> None:
         super().__init__()
         if isinstance(formula, str):
             formula = WellFormedFormula(formula)

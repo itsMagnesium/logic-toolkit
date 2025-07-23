@@ -1,5 +1,5 @@
 from base import ParseTree, Node
-from typing import Union
+from typing import Optional
 
 class WellFormedFormula(ParseTree):
     def __init__(self, formula: str) -> None:
@@ -18,7 +18,6 @@ class WellFormedFormula(ParseTree):
         return self
     
     def __parse_expression(self, formula: str) -> Node:
-        formula = formula
         if not formula:
             raise ValueError("Empty expression")
 
@@ -36,14 +35,8 @@ class WellFormedFormula(ParseTree):
                 neg_node.right = self.__parse_expression(operand)
                 return neg_node
             # Special constants first
-            elif formula in ['⊤', '⊥', 'T', 'F', 'true', 'false']:
-                # Normalize to standard symbols
-                if formula in ['T', 'true']:
-                    return Node('⊤')
-                elif formula in ['F', 'false']:
-                    return Node('⊥')
-                else:
-                    return Node(formula)
+            elif formula in ['⊤', '⊥']:
+                return Node(formula)
             # Then check for propositional variables
             elif len(formula) == 1 and formula.isalpha():
                 return Node(formula)
@@ -105,7 +98,7 @@ class WellFormedFormula(ParseTree):
         return -1
     
     @classmethod
-    def is_valid(cls, formula: str) -> Union["WellFormedFormula", None]:
+    def is_valid(cls, formula: str) -> Optional["WellFormedFormula"]:
         try:
             new_instance = cls(formula)
             print('Valid Formula')

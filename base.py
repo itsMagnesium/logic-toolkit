@@ -1,35 +1,40 @@
-from typing import Union
+from typing import Optional
 from copy import deepcopy
 
 class Node:
-    def __init__(self, value: str,  left: "Node" = None, right: "Node" = None) -> None:
+    def __init__(self, value: str,  left: Optional["Node"] = None, right: Optional["Node"] = None) -> None:
         self.value = value
         self.left = left
         self.right = right
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Node(value='{self.value}', left={f"'{self.left.value}'" if self.left else None}, right={f"'{self.right.value}'" if self.right else None})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
+    
+    def __eq__(self, other: "Node") -> bool:
+        if not isinstance(other, Node):
+            return False
+        return self.value == other.value and self.left == other.left and self.right == other.right
 
     @property
-    def left(self) -> "Node":
+    def left(self) -> Optional["Node"]:
         return self.__left
 
     @property
-    def right(self) -> "Node":
+    def right(self) -> Optional["Node"]:
         return self.__right
 
     @right.setter
-    def right(self, node: Union["Node", None]) -> None:
+    def right(self, node: Optional["Node"]) -> None:
         if isinstance(node, Node) or node is None:
             self.__right = node
         else:
             raise TypeError("Right child must be a Node instance or None.")
 
     @left.setter  
-    def left(self, node: Union["Node", None]) -> None:
+    def left(self, node: Optional["Node"]) -> None:
         if isinstance(node, Node) or node is None:
             self.__left = node
         else:
@@ -39,19 +44,24 @@ class Node:
         return deepcopy(self)
 
 class ParseTree:
-    def __init__(self) -> None:
-        self._root: Node = None
-    
-    def __repr__(self):
+    def __init__(self, root: Optional[Node] = None) -> None:
+        self._root = root
+
+    def __repr__(self) -> str:
         if not self.is_built:
             return f'{self.__class__.__name__}()'
         else:
             return f'{self.__class__.__name__}(formula="{self.__str__()}")'
 
-    def __str__(self):
+    def __str__(self) -> str:
         if not self.is_built:
             return ""
         return self._node_to_string(self._root)
+
+    def __eq__(self, other: "ParseTree") -> bool:
+        if not isinstance(other, ParseTree):
+            return False
+        return self._root == other._root
 
     def _node_to_string(self, node: Node) -> str:
         if node is None:
@@ -105,5 +115,5 @@ class ParseTree:
         return self._root is not None
 
     @property
-    def root(self) -> Node:
+    def root(self) -> Optional[Node]:
         return self._root

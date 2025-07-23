@@ -1,9 +1,9 @@
 from base import ParseTree, Node
 from wff import WellFormedFormula
-from typing import Union, Set, List, Tuple
+from typing import Optional, Union, Set, List, Tuple
 
 class HornFormula(ParseTree):
-    def __init__(self, formula: Union[WellFormedFormula, str] = None) -> None:
+    def __init__(self, formula: Optional[Union[WellFormedFormula, str]] = None) -> None:
         super().__init__()
         if isinstance(formula, str):
             if "∨" in formula or "v" in formula or "|" in formula or "¬" in formula:
@@ -99,7 +99,7 @@ class HornFormula(ParseTree):
             
         return clauses
         
-    def __extract_antecedent_vars(self, node: Node, vars_set: Set[str]):
+    def __extract_antecedent_vars(self, node: Node, vars_set: Set[str]) -> None:
         if node is None:
             return
             
