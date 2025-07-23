@@ -1,4 +1,4 @@
-from base import ParseTree, Node
+from logic_toolkit.base import ParseTree, Node
 from typing import Optional
 
 class WellFormedFormula(ParseTree):

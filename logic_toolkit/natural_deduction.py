@@ -1,5 +1,5 @@
 from typing import List, Dict, Union, Tuple, Optional
-from base import Node, ParseTree
+from logic_toolkit.base import Node, ParseTree
 
 class NaturalDeduction:
     def __init__(self) -> None:

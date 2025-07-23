@@ -1,5 +1,5 @@
-from base import ParseTree, Node
-from wff import WellFormedFormula
+from logic_toolkit.base import ParseTree, Node
+from logic_toolkit.wff import WellFormedFormula
 from typing import Optional, Union
 
 class CNF(ParseTree):
