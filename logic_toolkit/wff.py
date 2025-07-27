@@ -1,5 +1,4 @@
 from logic_toolkit.base import ParseTree, Node
-from typing import Optional
 
 class WellFormedFormula(ParseTree):
     def __init__(self, formula: str) -> None:

@@ -26,6 +26,49 @@ class NaturalDeduction:
     def __find_scope(self, scopes: List[Dict], start: int, end: int) -> Optional[Dict]:
         return next((s for s in scopes if s['start'] == start and s['end'] == end), None)
 
+    def __is_reference_valid(self, reference: Union[int, Tuple[int, int]], current_line_number: int, lines: List[Dict], scopes: Optional[List[Dict]] = None) -> bool:
+        if isinstance(reference, int):
+            if reference not in lines or reference >= current_line_number:
+                return False
+            
+            if scopes is None:
+                return True
+            
+            current_scope_level = lines[current_line_number]['scope_level']
+            referenced_scope_level = lines[reference]['scope_level']
+            
+            if referenced_scope_level < current_scope_level:
+                return True
+            
+            if referenced_scope_level == current_scope_level:
+                if current_scope_level == 0:
+                    return True
+                
+                for scope in scopes:
+                    if scope['start'] is not None:
+                        if scope['end'] is None:
+                            if (scope['start'] <= reference and scope['start'] <= current_line_number):
+                                return True
+                        else:
+                            if (scope['start'] <= reference <= scope['end'] and scope['start'] <= current_line_number <= scope['end']):
+                                return True
+                return False
+            
+            return False
+        
+        elif isinstance(reference, tuple):
+            start, end = reference
+            if scopes is None:
+                return False
+            
+            scope = self.__find_scope(scopes, start, end)
+            return scope is not None and end < current_line_number
+        
+        return False
+
+    def __validate_all_references(self, references: List[Union[int, Tuple[int, int]]], current_line_number: int, lines: List[Dict], scopes: Optional[List[Dict]] = None) -> bool:
+        return all(self.__is_reference_valid(ref, current_line_number, lines, scopes) for ref in references)
+
     def apply_rule(self, rule_name: str, lines: List[Dict], references: List[Union[int, Tuple[int, int]]], scopes: Optional[List[Dict]] = None) -> ParseTree:
         if rule_name not in self.__rules:
             raise ValueError(f"Unknown rule: {rule_name}")
@@ -34,10 +77,9 @@ class NaturalDeduction:
 
     def check_rule(self, line_number: int, lines: List[Dict], scopes: Optional[List[Dict]] = None) -> bool:
         line = lines[line_number]
-        rule_name = line['rule']
-        references = line['references']
-        formula = line['formula']
-        current_scope_level = line['scope_level']
+        rule_name: str = line['rule']
+        references: List[Union[int, Tuple[int, int]]] = line['references']
+        formula: ParseTree = line['formula']
 
         if rule_name in ["Premise", "Assumption"]:
             return True
@@ -45,14 +87,8 @@ class NaturalDeduction:
         if rule_name not in self.__rules:
             raise ValueError(f"Unknown rule: {rule_name}")
 
-        for ref in references:
-            if isinstance(ref, int):
-                if ref not in lines or lines[ref]['scope_level'] > current_scope_level:
-                    return False
-            elif isinstance(ref, tuple):
-                scope = self.__find_scope(scopes, ref[0], ref[1])
-                if not scope or scope['end'] >= line_number:
-                    return False
+        if not self.__validate_all_references(references, line_number, lines, scopes):
+            return False
         if rule_name in ['⊥e', '∨i1', '∨i2', 'LEM']:
             references.append(line_number)
         expected_tree = self.apply_rule(rule_name, lines, references, scopes)
@@ -119,14 +155,17 @@ class NaturalDeduction:
             raise ValueError("Expected one reference and two scopes for ∨e rule.")
 
         line, (s1, e1), (s2, e2) = references
-        or_formula: ParseTree = lines[references[0]]['formula']
+
+        or_formula: ParseTree = lines[line]['formula']
         if or_formula.root.value != '∨':
             raise ValueError("Expected a disjunction (A ∨ B) for ∨e rule.")
         if not self.__find_scope(scopes, s1, e1) or \
             not self.__find_scope(scopes, s2, e2) or \
             lines[s1]['scope_level'] != lines[s2]['scope_level']:
             raise ValueError("Invalid scopes for ∨e rule.")
-        
+        if (or_formula.root.left != lines[s1]['formula'].root and or_formula.root.right != lines[s1]['formula'].root) or (or_formula.root.left != lines[s2]['formula'].root and or_formula.root.right != lines[s2]['formula'].root):
+            raise ValueError("The formulas in the scopes must match the operands of the disjunction.")
+
         if lines[s1]['formula'] != ParseTree(or_formula.root.left.copy()):
             raise ValueError("Left scope does not match the left operand of the disjunction.")
         if lines[s2]['formula'] != ParseTree(or_formula.root.right.copy()):
@@ -289,10 +328,11 @@ class NaturalDeduction:
         if lines[end]['formula'].root.value != '⊥':
             raise ValueError("The ending line must be false (⊥) for PBC rule.")
         
-        if assumption.root.value != '¬':
-            raise ValueError("Assumption must be a negation (¬A) for PBC rule.")
-        
-        return ParseTree(assumption.root.right.copy())
+        if assumption.root.value == '¬':
+            return ParseTree(assumption.root.right.copy())
+        else:
+            root = Node(value='¬', right=assumption.root)
+            return ParseTree(root)
 
     def __law_of_excluded_middle(self, lines: List[Dict], references: List[Union[int, Tuple[int, int]]], scopes: Optional[List[Dict]] = None) -> ParseTree:
         if len(references) != 1:

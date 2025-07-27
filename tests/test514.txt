@@ -1,0 +1,13 @@
+input:
+ 1    p → q        Premise
+ 2    ¬q        Premise
+      BeginScope
+ 3      ¬(¬p)    Assumption
+ 4      p        ¬¬e, 3
+ 5      q        →e, 1, 4
+ 6      ⊥        ¬e, 2, 5
+      EndScope
+ 7    ¬p        PBC, 3-6
+
+output:
+Valid Deduction
